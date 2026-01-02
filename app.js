@@ -9,7 +9,6 @@ const flash = require("connect-flash");
 const session = require("express-session");
 const cookieParser = require("cookie-parser");
 const methodOverride = require("method-override");
-const { auth } = require("express-openid-connect");
 /**
  * Utils
  */
@@ -20,12 +19,12 @@ const { getLoggedInUser } = require("./utils/getLoggedInUser.js");
  * Configs
  */
 const sessionConfig = require("./configs/sessionConfig.js");
-const authZeroConfig = require("./configs/authZeroConfig.js");
 /**
  * Declarations
  */
 const app = express();
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || "127.0.0.1";
 
 /**
  * Routes imports
@@ -37,11 +36,6 @@ const userAuthRouter = require("./router/v1/user/user.auth.router.js");
 const v2UserAuthRouter = require("./router/v2/user/user.v2.auth.router.js");
 
 const paperRouter = require("./router/v1/paper/paper.router.js");
-
-/**
- * Middlewares
- */
-const checkAuthZeroLogin = require("./middlewares/v1/auth/checkAuthZeroLogin.js");
 //
 /** Stripe webhook requests **/
 //
@@ -50,7 +44,6 @@ app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "/views"));
 app.use(session(sessionConfig));
 app.use(flash());
-app.use(auth(authZeroConfig));
 app.use(morgan("dev"));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist")));
@@ -127,8 +120,8 @@ const runServer = async () => {
 	try {
 		// If you feel like removing await on next line then don't.
 		await connectDB();
-		app.listen(PORT, () => {
-			console.log(`Server is running on port ${PORT} 🔥`);
+		app.listen(PORT, HOST, () => {
+			console.log(`Server is running on port http://${HOST}:${PORT} 🔥`);
 		});
 	} catch (e) {
 		console.log(`Error: ${e}`);
