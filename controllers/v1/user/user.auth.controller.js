@@ -13,6 +13,7 @@ const User = require("../../../models/user.model.js");
  */
 const { newToken } = require("../../../utils/jwt.js");
 const catchAsync = require("../../../utils/server-error-handling/catchAsyncError.js");
+const redirect = require("../../../utils/redirect.js");
 
 /**
  * @description: Render the register page
@@ -23,7 +24,9 @@ module.exports.renderRegister = (req, res) => {
 			"success",
 			"You are already logged in, try logging out before signing up again"
 		);
-		return res.redirect("/api/v1/papers");
+
+		redirect(res, "/api/v1/papers");
+		return;
 	} else {
 		return res.render("auth/user/register");
 	}
@@ -36,11 +39,12 @@ module.exports.registerUser = catchAsync(async (req, res) => {
 	const { email, password } = req.body;
 	if (!validator.isEmail(email)) {
 		req.flash("error", "Invalid email address");
-		return res.redirect("/api/v1/register");
+		redirect(res, "/api/v1/register");
+		return;
 	}
 	if (!validator.isLength(password, { min: 6, max: 50 })) {
 		req.flash("error", "Password must be between 6 and 50 characters");
-		return res.redirect("/api/v1/register");
+		redirect(res, "/api/v1/register");
 	}
 
 	const existingUser = await User.findOne({
@@ -53,7 +57,8 @@ module.exports.registerUser = catchAsync(async (req, res) => {
 
 	if (existingUser) {
 		req.flash("error", "This email is already in use.");
-		return res.redirect("/api/v1/register");
+		redirect(res, "/api/v1/register");
+		return;
 	}
 
 	const user = new User({
@@ -69,7 +74,7 @@ module.exports.registerUser = catchAsync(async (req, res) => {
 	res.cookie("token", token, { signed: true });
 	req.flash("success", "Welcome to vqbank");
 
-	return res.redirect("/api/v1/papers");
+	redirect(res, "/api/v1/papers");
 });
 
 /**
@@ -86,7 +91,8 @@ module.exports.loginUser = catchAsync(async (req, res) => {
 	const { email, password } = req.body;
 	if (!validator.isEmail(email)) {
 		req.flash("error", "Invalid email address");
-		return res.redirect("/api/v1/login");
+		redirect(res, "/api/v1/login");
+		return;
 	}
 
 	const user = await User.findOne({
@@ -99,14 +105,16 @@ module.exports.loginUser = catchAsync(async (req, res) => {
 
 	if (!user) {
 		req.flash("error", "Invalid email or password");
-		return res.redirect("/api/v1/login");
+		redirect(res, "/api/v1/login");
+		return;
 	}
 
 	const isMatch = await user.checkPassword(password);
 
 	if (!isMatch) {
 		req.flash("error", "Invalid email or password");
-		return res.redirect("/api/v1/login");
+		redirect(res, "/api/v1/login");
+		return;
 	}
 
 	const token = newToken(user._id);
@@ -115,7 +123,7 @@ module.exports.loginUser = catchAsync(async (req, res) => {
 	res.cookie("token", token, { signed: true });
 	req.flash("success", "Welcome back to vqbank");
 
-	return res.redirect("/api/v1/papers");
+	redirect(res, "/api/v1/papers");
 });
 
 /**
@@ -124,5 +132,5 @@ module.exports.loginUser = catchAsync(async (req, res) => {
 module.exports.logoutUser = catchAsync(async (req, res) => {
 	res.clearCookie("token");
 	req.flash("success", "You have been logged out");
-	return res.redirect("/logout");
+	redirect(res, "/api/v1/login");
 });

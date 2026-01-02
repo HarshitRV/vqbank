@@ -15,6 +15,7 @@ const methodOverride = require("method-override");
 const connectDB = require("./utils/connectDB.js");
 const AppError = require("./utils/server-error-handling/AppError.js");
 const { getLoggedInUser } = require("./utils/getLoggedInUser.js");
+const redirect = require("./utils/redirect.js");
 /**
  * Configs
  */
@@ -25,6 +26,7 @@ const sessionConfig = require("./configs/sessionConfig.js");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const HOST = process.env.HOST || "127.0.0.1";
+const BASE_PATH = process.env.BASE_PATH || "";
 
 /**
  * Routes imports
@@ -45,8 +47,8 @@ app.set("views", path.join(__dirname, "/views"));
 app.use(session(sessionConfig));
 app.use(flash());
 app.use(morgan("dev"));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.static(path.join(__dirname, "node_modules/bootstrap/dist")));
+app.use(BASE_PATH, express.static(path.join(__dirname, "public")));
+app.use(BASE_PATH, express.static(path.join(__dirname, "node_modules/bootstrap/dist")));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(methodOverride("_method"));
@@ -60,20 +62,20 @@ app.use(async (req, res, next) => {
 /**
  * Routes middlewares
  */
-app.use("/api/v1", adminRouter);
-app.use("/api/v1", userRouter);
+app.use("/app/vqbank/api/v1", adminRouter);
+app.use("/app/vqbank/api/v1", userRouter);
 
-app.use("/api/v1", userAuthRouter);
-app.use("/api/v2", v2UserAuthRouter);
+app.use("/app/vqbank/api/v1", userAuthRouter);
+app.use("/app/vqbank/api/v2", v2UserAuthRouter);
 
-app.use("/api/v1", paperRouter);
+app.use("/app/vqbank/api/v1", paperRouter);
 
 /**
  * Landing page route
  */
-app.route("/").get(async (req, res) => {
+app.route("/app/vqbank").get(async (req, res) => {
 	if (req.signedCookies && req.signedCookies.token) {
-		return res.redirect("/api/v1/papers");
+		return redirect(res, "/api/v1/papers");
 	}
 	return res.render("landing");
 });
@@ -81,7 +83,7 @@ app.route("/").get(async (req, res) => {
 /**
  * Sever status
  */
-app.route("/status").get((req, res) => {
+app.route("/app/vqbank/status").get((req, res) => {
 	res.status(200).json({ message: "Server is running" });
 });
 
@@ -101,15 +103,18 @@ app.use((err, req, res, next) => {
 	//! Refactoring required
 	if (statusCode === 415) {
 		req.flash("error", message);
-		return res.redirect("/api/v1/upload");
+		redirect(res, "/api/v1/upload");
+		return;
 	}
 	if (err.name === "MulterError") {
 		req.flash("error", err.message);
-		return res.redirect("/api/v1/upload");
+		redirect(res, "/api/v1/upload");
+		return;
 	}
 	if (err.name === "AggregateError") {
 		req.flash("error", "You are offline. Check your network.");
-		return res.redirect("/api/v1/login");
+		redirect(res, "/api/v1/login");
+		return;
 	}
 	//! --------------------------------------------
 

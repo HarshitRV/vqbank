@@ -5,6 +5,9 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const searchBar = document.getElementById("searchBar");
 const searchContent = document.getElementById("search-content");
+const BASE_PATH = '/app/vqbank';
+
+console.log("BASE_PATH:", BASE_PATH);
 
 searchBar.addEventListener("input", async () => {
 	const query = searchBar.value.trim();
@@ -16,7 +19,7 @@ searchBar.addEventListener("input", async () => {
 
 	try {
 		
-		const response = await fetch(`/api/v1/paper/suggestions?query=${query}`);
+		const response = await fetch(`${BASE_PATH}/api/v1/paper/suggestions?query=${query}`);
 
         searchContent.classList.add('text-center')
         searchContent.innerHTML = `
@@ -55,12 +58,12 @@ searchBar.addEventListener("input", async () => {
                         </h5>
                         <div class="card-body">
                             <div class="mt-3 d-flex">
-                                <a class="btn btn-outline-primary" href="/api/v1/paper/view/${ paper._id }" target="_blank">View</a>
-                                <a class="btn btn-success ms-3" href="/api/v1/paper/view/${ paper._id }" download="${ paper.originalname }">Download</a>
+                                <a class="btn btn-outline-primary" href="${BASE_PATH}/api/v1/paper/view/${ paper._id }" target="_blank">View</a>
+                                <a class="btn btn-success ms-3" href="${BASE_PATH}/api/v1/paper/view/${ paper._id }" download="${ paper.originalname }">Download</a>
 
                                 <div class="btn-group ms-3" role="group" aria-label="admin accessible buttons">
-                                    <a type="button" href="/api/v1/paper/edit/${paper._id}" class="btn btn-outline-warning">Edit</a>
-                                    <form class="btn btn-danger" action="/api/v1/paper/delete/${paper._id}?_method=DELETE" method="post">
+                                    <a type="button" href="${BASE_PATH}/api/v1/paper/edit/${paper._id}" class="btn btn-outline-warning">Edit</a>
+                                    <form class="btn btn-danger" action="${BASE_PATH}/api/v1/paper/delete/${paper._id}?_method=DELETE" method="post">
                                         <button class="unbutton" type="submit">Delete</button>
                                     </form>
                                 </div>

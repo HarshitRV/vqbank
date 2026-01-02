@@ -2,6 +2,7 @@
  * Utils
  */
 const { verifyToken } = require("../../../utils/jwt.js");
+const redirect = require("../../../utils/redirect.js");
 
 /**
  * Models
@@ -23,7 +24,7 @@ const protect = async (req, res, next) => {
 			req.user = await User.findById(payload.id).select("-password -tokens");
 			if (!req.user) {
 				req.flash("error", "You are not authorized to access this page.");
-				return res.redirect("/api/v1/login");
+				redirect("/api/v1/login");
 			}
 			req.token = jwtToken;
 
@@ -37,8 +38,10 @@ const protect = async (req, res, next) => {
 	} catch (e) {
 		if (e.name === "JsonWebTokenError") {
 			req.flash("error", "Your session has expired. Please login again.");
-			return res.redirect("/api/v1/login");
+			redirect(res, "/api/v1/login");
+			return;
 		}
+
 		if (e.name === "TokenExpiredError") {
 			req.flash("error", "Your session has expired. Please login again.");
 			// When token expired delete it from user tokens array
@@ -52,12 +55,13 @@ const protect = async (req, res, next) => {
 			res.clearCookie("token");
 
 			req.flash("error", "Login to continue");
-			return res.redirect("/api/v1/login");
+			redirect(res, "/api/v1/login");
+			return;
 		}
 		console.error(e);
 
 		req.flash("error", "Something went wrong. Please try again later.");
-		return res.redirect("/api/v1/login");
+		redirect(res, "/api/v1/login");
 	}
 };
 
