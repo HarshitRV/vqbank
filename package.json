@@ -9,7 +9,7 @@
 	"description": "A collection of VIT Vellore examination papers",
 	"license": "MIT",
 	"scripts": {
-		"start": "bun app.js",
+		"start": "bun run app.js",
 		"dev": "env-cmd -f ./env/dev.env bun --watch app.js",
 		"prod": "env-cmd -f ./env/prod.env bun --watch app.js"
 	},
